@@ -1,0 +1,299 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#100713">
+<title>Hoàng Huy ❤️ Thanh Hậu</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;min-height:100vh;overflow:hidden;
+ display:flex;justify-content:center;align-items:center;
+ text-align:center;color:white;
+ font-family:Georgia,serif;
+ background:radial-gradient(circle,#40102f,#160817 60%,#030205);
+}
+canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#heartCanvas{z-index:1}
+#effects{z-index:2}
+.container{position:relative;z-index:3;padding:15px;width:100%}
+h1{color:#ff8acb;text-shadow:0 0 20px #ff1493;font-size:29px}
+.subtitle{color:#ffc6e3;letter-spacing:3px;font-size:12px}
+.heart3d{
+ font-size:85px;display:inline-block;
+ filter:drop-shadow(0 0 22px #ff1493);
+ animation:beat 1s infinite;
+}
+@keyframes beat{
+ 0%,100%{transform:scale(1)}
+ 50%{transform:scale(1.2)}
+}
+button{
+ border:1px solid #ff80bd;border-radius:30px;
+ padding:14px 22px;margin:8px;
+ color:white;font-size:15px;
+ background:linear-gradient(45deg,#a90060,#ff3699);
+ box-shadow:0 0 18px #ff1493;
+ cursor:pointer;
+}
+button:active{transform:scale(.94)}
+#letter{
+ display:none;margin:15px auto;padding:22px;
+ max-width:350px;border:1px solid #ff80bd;
+ border-radius:20px;background:#270d28;
+ color:#ffe1ef;line-height:1.9;
+ box-shadow:0 0 30px #ff1493;
+ animation:appear 1s ease;
+ max-height:45vh;overflow:auto;
+}
+@keyframes appear{
+ from{opacity:0;transform:translateY(25px)}
+ to{opacity:1;transform:translateY(0)}
+}
+#gift{font-size:65px;cursor:pointer;animation:beat 1s infinite}
+#hint{font-size:13px;color:#ffc6e3}
+#heartCanvas{
+ width:min(90vw,400px);
+ height:min(65vw,300px);
+ display:block;margin:auto;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="heartCanvas"></canvas>
+<canvas id="effects"></canvas>
+
+<div class="container">
+ <div class="subtitle">A SPECIAL GIFT FOR YOU</div>
+
+ <h1>HOÀNG HUY ❤️ THANH HẬU</h1>
+
+ <div class="heart3d">❤️</div>
+
+ <p style="color:#ffd3e8">
+  Một trái tim dành riêng cho em...
+ </p>
+
+ <div id="giftArea">
+  <div id="gift" onclick="openGift()">🎁</div>
+  <div id="hint">Chạm vào hộp quà bí mật nhé!</div>
+ </div>
+
+ <div id="letter">
+  <h2>💌 Gửi Thanh Hậu</h2>
+  Thanh Hậu à! ❤️<br><br>
+  Cảm ơn em đã xuất hiện trong cuộc đời Hoàng Huy.<br>
+  Anh không cần một thế giới hoàn hảo,<br>
+  anh chỉ cần thế giới ấy có em.<br><br>
+  Mong rằng chúng ta sẽ luôn nắm tay nhau,<br>
+  cùng đi qua mọi vui buồn trong cuộc sống.<br><br>
+  Dù cho tận thế, anh vẫn muốn bên em.<br><br>
+  <strong>HOÀNG HUY ❤️ THANH HẬU</strong><br>
+  Forever Love 🌹
+ </div>
+
+ <button onclick="startFireworks()">🎆 Pháo hoa</button>
+ <button onclick="toggleMusic()" id="musicBtn">🎵 Bật nhạc</button>
+</div>
+
+<!-- Đặt file MP3 cùng thư mục với index.html -->
+<audio id="loveMusic" loop preload="auto">
+ <source src="du-cho-tan-the.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// ===== TRÁI TIM NHỎ TẬP HỢP =====
+const hc=document.getElementById("heartCanvas");
+const ctx=hc.getContext("2d");
+let W,H,particles=[],formedAt=0;
+
+function resize(){
+ const d=Math.min(devicePixelRatio||1,2);
+ W=hc.clientWidth;H=hc.clientHeight;
+ hc.width=W*d;hc.height=H*d;
+ ctx.setTransform(d,0,0,d,0,0);
+ createParticles();
+}
+
+function heartPoint(t){
+ return {
+  x:16*Math.pow(Math.sin(t),3),
+  y:-(13*Math.cos(t)-5*Math.cos(2*t)
+  -2*Math.cos(3*t)-Math.cos(4*t))
+ };
+}
+
+function createParticles(){
+ particles=[];
+ const scale=Math.min(W/38,H/32)*.85;
+ for(let i=0;i<220;i++){
+  const t=Math.random()*Math.PI*2;
+  const p=heartPoint(t);
+  const fill=Math.sqrt(Math.random());
+  particles.push({
+   x:Math.random()*W,
+   y:Math.random()*H,
+   tx:W/2+p.x*scale*fill,
+   ty:H/2+p.y*scale*fill,
+   size:2+Math.random()*3,
+   color:["#ff3e91","#ff8fc9","#fff","#ff174f"][i%4]
+  });
+ }
+ formedAt=performance.now();
+}
+
+function drawSmallHeart(x,y,size,color){
+ ctx.save();
+ ctx.translate(x,y);
+ ctx.scale(size/20,size/20);
+ ctx.fillStyle=color;
+ ctx.beginPath();
+ ctx.moveTo(0,7);
+ ctx.bezierCurveTo(-20,-7,-10,-18,0,-8);
+ ctx.bezierCurveTo(10,-18,20,-7,0,7);
+ ctx.fill();
+ ctx.restore();
+}
+
+function animateHeart(now){
+ ctx.clearRect(0,0,W,H);
+ const progress=Math.min(1,(now-formedAt)/2800);
+ const ease=1-Math.pow(1-progress,3);
+ const pulse=1+Math.sin(now*.003)*.035;
+
+ particles.forEach(p=>{
+  const x=p.x+(p.tx-p.x)*ease;
+  const y=p.y+(p.ty-p.y)*ease;
+  const px=W/2+(x-W/2)*pulse;
+  const py=H/2+(y-H/2)*pulse;
+  ctx.shadowBlur=12;
+  ctx.shadowColor=p.color;
+  drawSmallHeart(px,py,p.size,p.color);
+ });
+ ctx.shadowBlur=0;
+ requestAnimationFrame(animateHeart);
+}
+
+// ===== PHÁO HOA =====
+const fx=document.getElementById("effects");
+const f=fx.getContext("2d");
+let FW,FH,fireworks=[];
+
+function resizeFX(){
+ const d=Math.min(devicePixelRatio||1,2);
+ FW=innerWidth;FH=innerHeight;
+ fx.width=FW*d;fx.height=FH*d;
+ f.setTransform(d,0,0,d,0,0);
+}
+
+function burst(x,y){
+ for(let i=0;i<55;i++){
+  const a=Math.PI*2*i/55;
+  const speed=1+Math.random()*3;
+  fireworks.push({
+   x,y,vx:Math.cos(a)*speed,
+   vy:Math.sin(a)*speed,
+   life:1,size:2+Math.random()*3
+  });
+ }
+}
+
+function animateFX(){
+ f.clearRect(0,0,FW,FH);
+ fireworks.forEach((p,i)=>{
+  p.x+=p.vx;p.y+=p.vy;
+  p.vy+=.025;p.life-=.012;
+  f.globalAlpha=Math.max(0,p.life);
+  f.shadowBlur=15;f.shadowColor="#ff1493";
+  drawSmallHeart(p.x,p.y,p.size*2,"#ff70bb");
+  if(p.life<=0)fireworks.splice(i,1);
+ });
+ f.globalAlpha=1;f.shadowBlur=0;
+ requestAnimationFrame(animateFX);
+}
+
+function startFireworks(){
+ for(let i=0;i<10;i++){
+  setTimeout(()=>{
+   burst(FW*.15+Math.random()*FW*.7,
+   FH*.15+Math.random()*FH*.4);
+  },i*250);
+ }
+}
+
+// ===== MỞ HỘP QUÀ =====
+function openGift(){
+ document.getElementById("gift").innerHTML="💝";
+ document.getElementById("hint").innerHTML="Món quà dành riêng cho em ❤️";
+ document.getElementById("letter").style.display="block";
+ startFireworks();
+}
+
+// ===== NHẠC DÙ CHO TẬN THẾ - ERIK =====
+const loveMusic=document.getElementById("loveMusic");
+
+async function toggleMusic(){
+ const btn=document.getElementById("musicBtn");
+
+ if(loveMusic.paused){
+  try{
+   await loveMusic.play();
+   btn.innerText="🔇 Tắt nhạc";
+  }catch(error){
+   alert("Không phát được nhạc. Hãy kiểm tra file du-cho-tan-the.mp3");
+  }
+ }else{
+  loveMusic.pause();
+  btn.innerText="🎵 Bật nhạc";
+ }
+}
+
+// ===== KHỞI ĐỘNG =====
+window.addEventListener("resize",()=>{
+ resize();
+ resizeFX();
+});
+
+resize();
+resizeFX();
+requestAnimationFrame(animateHeart);
+requestAnimationFrame(animateFX);
+
+setInterval(()=>{
+ if(Math.random()>.65){
+  burst(Math.random()*FW,Math.random()*FH*.55);
+ }
+},1800);
+</script>
+
+</body>
+</html>
+<audio id="loveMusic" loop preload="auto">
+  <source src="du-cho-tan-the.mp3" type="audio/mpeg">
+</audio> // ===== NHẠC DÙ CHO TẬN THẾ - ERIK =====
+const loveMusic = document.getElementById("loveMusic");
+
+async function toggleMusic() {
+  const btn = document.getElementById("musicBtn");
+
+  if (loveMusic.paused) {
+    try {
+      await loveMusic.play();
+      btn.innerText = "🔇 Tắt nhạc";
+    } catch (error) {
+      btn.innerText = "🎵 Nhấn để phát nhạc";
+      alert("Không tìm thấy file nhạc. Hãy kiểm tra du-cho-tan-the.mp3");
+    }
+  } else {
+    loveMusic.pause();
+    btn.innerText = "🎵 Bật nhạc";
+  }
+} love-thanh-hau/
+│
+├── index.html
+└── du-cho-tan-the.mp3
